@@ -1,4 +1,3 @@
-
 // Original Library from - https://github.com/enternoescape/Arduino-IRremote-Due 
 // Sketch modified by Electromania Dec 2015
 // http://theelectromania.blogspot.it/2015/12/home-built-ir-remote-receiver-or.html 
@@ -7,38 +6,84 @@
 //#include "global_def.h"  // These don't seem to work.  They should.
 //#include "ms_remote_map.h" // These don't seem to work.  They should.
 #include <IRremote2.h>
+// first check Hex code of each key of your remote and then modify the definations below
+#define k3 0xFD40BF   // we will define the HEX code for each key of remote (these codes are for my remote)
+#define k4 0xFD20DF
+#define k5 0xFDA05F
+#define k6 0xFD609F
+#define k7 0xFD10EF
+#define OK 0xFDA857
 
-//#define ms_remote_map.h
+#define RECV_PIN 11  // pin 11 used to receive IR code
 
-#define RECV_PIN A0
-#define LED_PIN 13 // choose the pin for the LED
-
-byte ledState;
-IRrecv irrecv(RECV_PIN);
-decode_results results;
-boolean power_state = LOW;
+IRrecv irrecv(RECV_PIN);  // reads signal at pin 11
+decode_results results; 
 
 void setup(){
   Serial.begin(9600);
   irrecv.enableIRIn(); // Start the receiver
-  pinMode(LED_PIN, OUTPUT);  // declare LED as output
+  
+  pinMode(3, OUTPUT);  // declare LED as output
+   digitalWrite(3, LOW); // to keep LED off by default in the begining
+  pinMode(4, OUTPUT);  // declare LED as output
+   digitalWrite(4, LOW);
+  pinMode(5, OUTPUT);  // declare LED as output
+   digitalWrite(5, LOW);
+  pinMode(6, OUTPUT);  // declare LED as output
+   digitalWrite(6, LOW);
+  pinMode(7, OUTPUT);  // declare LED as output
+   digitalWrite(7, LOW);
   pinMode(RECV_PIN, INPUT);  // declare LED as output
 }
 
 void loop() {
   if (irrecv.decode(&results)) {  //If IR receive results are detected
-     Serial.println(results.value, HEX);
-    
-    if (results.value == 0x143226DB)
-     {
-       
-       digitalWrite(LED_PIN, HIGH);
-       delay(1000);
-       digitalWrite(LED_PIN, LOW);
-       
+     Serial.println(results.value, HEX);  // print HEX code of pressed key at serial port
+int    Code = results.value;  // HEX code is passed to variable Code
+   
+   switch (Code) {
+     case k3:  // if number 3 key is pressed it will switch ON LED at pin 3 
+       {
+         digitalWrite(3, HIGH);
+       }
+      break;
+    case k4:
+    {     
+       digitalWrite(4, HIGH);
      }
+    break;
+    case k5:
+    {      
+       digitalWrite(5, HIGH);
+    }
+    break;
+    case k6:
+    {      
+       digitalWrite(6, HIGH);
+    }
+    break;
+    case k7:
+    {      
+       digitalWrite(7, HIGH);
+    }
+    break;
 
-    delay(200);  // 1/5 second delay for arbitrary clicks.  Will implement debounce later.
+   case OK:          // loop to reset all LEDs to OFF after pressing OK
+    {      
+        for (int PinNo = 3; PinNo < 8; PinNo++)   
+        {
+           delay(10);
+           digitalWrite(PinNo, LOW);
+        }
+    }
+    break;
+    
+  default:
+    Serial.println("Waiting for commands");   // default case 
+  break;
+}
+
+    delay(200);  // 1/5 second delay for arbitrary clicks.  
     irrecv.resume(); // Receive the next value
   }
 }
